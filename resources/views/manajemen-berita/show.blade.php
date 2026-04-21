@@ -1,5 +1,14 @@
 @extends('layouts.users')
 
+@section('css')
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-editor { padding: 0; border: none; }
+    .ql-container.ql-snow.ql-disabled { border: none; }
+    .ql-toolbar { display: none; }
+</style>
+@endsection
+
 @section('konten')
 <div class="flex-1 flex flex-col overflow-hidden">
     @include('components.navbar')
@@ -35,8 +44,8 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
-            @if($berita->gambar_url)
-                <img src="{{ $berita->gambar_url }}" alt="{{ $berita->judul }}"
+            @if($berita->gambar)
+                <img src="{{ Storage::url($berita->gambar) }}" alt="{{ $berita->judul }}"
                      class="w-full h-64 object-cover">
             @endif
 
@@ -57,8 +66,8 @@
 
                 <div class="flex items-center gap-4 text-sm text-gray-500 mb-6 pb-6 border-b border-gray-100">
                     <span><i class="fas fa-user mr-1"></i>{{ $berita->penulis?->name ?? 'Admin' }}</span>
-                    <span><i class="fas fa-calendar mr-1"></i>{{ $berita->created_at->translatedFormat('d F Y') }}</span>
-                    <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{{ $berita->slug }}</span>
+                    <span><i class="fas fa-calendar mr-1"></i>{{ $berita->tanggal->format('d F Y') }}</span>
+                    <span class="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">/berita/{{ $berita->slug }}</span>
                 </div>
 
                 @if($berita->ringkasan)
@@ -67,8 +76,11 @@
                     </div>
                 @endif
 
-                <div class="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {{ $berita->konten }}
+                {{-- Render HTML dari Quill --}}
+                <div class="ql-container ql-snow ql-disabled">
+                    <div class="ql-editor text-gray-700 leading-relaxed">
+                        {!! $berita->konten !!}
+                    </div>
                 </div>
             </div>
         </div>

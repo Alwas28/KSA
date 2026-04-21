@@ -23,7 +23,11 @@
                         <div class="py-2">
                             <a href="{{ route('profil-anggota.index') }}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-simkop-green-light/10 hover:to-simkop-green/10 hover:text-simkop-green-dark transition-all duration-200 group/item">
                                 <i class="fas fa-user mr-3 text-simkop-green group-hover/item:scale-110 transition-transform"></i>
-                                <span class="font-medium">Profile Saya</span>
+                                <span class="font-medium">Profil Anggota</span>
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-simkop-green-light/10 hover:to-simkop-green/10 hover:text-simkop-green-dark transition-all duration-200 group/item">
+                                <i class="fas fa-user-cog mr-3 text-simkop-green group-hover/item:scale-110 transition-transform"></i>
+                                <span class="font-medium">Edit Akun</span>
                             </a>
                             <form action="{{ route('logout') }}" method="post" class="mt-1">
                                 @csrf

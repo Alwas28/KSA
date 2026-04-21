@@ -11,7 +11,11 @@ class Berita extends Model
 
     protected $fillable = [
         'judul', 'slug', 'kategori', 'ringkasan',
-        'konten', 'gambar_url', 'status', 'id_penulis',
+        'konten', 'gambar', 'tanggal', 'status', 'id_penulis',
+    ];
+
+    protected $casts = [
+        'tanggal' => 'date',
     ];
 
     public function penulis()

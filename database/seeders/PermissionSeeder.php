@@ -51,6 +51,12 @@ class PermissionSeeder extends Seeder
             ['id' => 26, 'name' => 'pinjaman.create',        'display_name' => 'Tambah Pinjaman',         'description' => 'Pinjaman',                               'module' => 'pinjaman',       'is_active' => true, 'created_at' => '2025-12-13 12:34:54', 'updated_at' => '2025-12-13 12:34:54'],
             ['id' => 27, 'name' => 'pinjaman.update',        'display_name' => 'Update Pinjaman',         'description' => 'Pinjaman',                               'module' => 'pinjaman',       'is_active' => true, 'created_at' => '2025-12-13 12:35:15', 'updated_at' => '2025-12-13 12:35:15'],
             ['id' => 28, 'name' => 'pinjaman.delete',        'display_name' => 'Hapus Pinjaman',          'description' => 'Pinjaman',                               'module' => 'pinjaman',       'is_active' => true, 'created_at' => '2025-12-13 12:35:32', 'updated_at' => '2025-12-13 12:35:32'],
+
+            // Berita
+            ['id' => 50, 'name' => 'berita.read',            'display_name' => 'Lihat Berita',            'description' => 'Melihat daftar berita',                  'module' => 'berita',         'is_active' => true, 'created_at' => '2026-04-21 00:00:00', 'updated_at' => '2026-04-21 00:00:00'],
+            ['id' => 51, 'name' => 'berita.create',          'display_name' => 'Tambah Berita',           'description' => 'Menambahkan berita baru',                'module' => 'berita',         'is_active' => true, 'created_at' => '2026-04-21 00:00:00', 'updated_at' => '2026-04-21 00:00:00'],
+            ['id' => 52, 'name' => 'berita.edit',            'display_name' => 'Edit Berita',             'description' => 'Mengedit berita',                        'module' => 'berita',         'is_active' => true, 'created_at' => '2026-04-21 00:00:00', 'updated_at' => '2026-04-21 00:00:00'],
+            ['id' => 53, 'name' => 'berita.delete',          'display_name' => 'Hapus Berita',            'description' => 'Menghapus berita',                       'module' => 'berita',         'is_active' => true, 'created_at' => '2026-04-21 00:00:00', 'updated_at' => '2026-04-21 00:00:00'],
         ];
 
         foreach ($permissions as $permission) {

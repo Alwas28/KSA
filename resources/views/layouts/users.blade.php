@@ -113,9 +113,15 @@
                     <i class="fas fa-plus-circle w-5 mr-3"></i>
                     <span>Data Simpanan</span>
                 </a>
-                <a href="#" class="flex items-center p-3 rounded-lg hover:bg-green-600 transition duration-150">
-                    <i class="fas fa-chart-bar w-5 mr-3"></i>
-                    <span>Rekap Simpanan</span>
+            @endif
+
+            @if(auth()->user()->hasPermission('simpanan.read'))
+
+                <!-- D. Buku Kas -->
+                <h2 class="text-xs font-semibold text-gray-300 uppercase pt-4 pb-1 px-3">Keuangan</h2>
+                <a href="{{ route('buku-kas.index') }}" class="flex items-center p-3 rounded-lg hover:bg-green-600 transition duration-150 {{ request()->routeIs('buku-kas.*') ? 'bg-simkop-green-light' : '' }}">
+                    <i class="fas fa-book w-5 mr-3"></i>
+                    <span>Buku Kas</span>
                 </a>
             @endif
 
@@ -135,21 +141,6 @@
                     <i class="fas fa-money-bill-wave w-5 mr-3"></i>
                     <span>Pembayaran Angsuran</span>
                 </a>
-                <a href="#" class="flex items-center p-3 rounded-lg hover:bg-green-600 transition duration-150">
-                    <i class="fas fa-exclamation-triangle w-5 mr-3"></i>
-                    <span>Tunggakan & Denda</span>
-                </a>
-            @endif
-
-            @if(auth()->user()->hasPermission('simpanan.read'))
-
-                <!-- D. Buku KAS -->
-                <h2 class="text-xs font-semibold text-gray-300 uppercase pt-4 pb-1 px-3">Keuangan</h2>
-                <a href="{{ route('buku-kas.index') }}" class="flex items-center p-3 rounded-lg hover:bg-green-600 transition duration-150 {{ request()->routeIs('buku-kas.*') ? 'bg-simkop-green-light' : '' }}">
-                    <i class="fas fa-book w-5 mr-3"></i>
-                    <span>Buku Kas</span>
-                </a>
-
             @endif
 
             {{-- F. Laporan --}}
@@ -231,15 +222,12 @@
                         <i id="menu-post-arrow" class="fas fa-chevron-down text-xs transition-transform duration-300"></i>
                     </button>
                     <div id="menu-post-submenu" class="pl-8 space-y-1 hidden">
-                        <a href="#" class="flex items-center p-2 rounded-lg hover:bg-green-700 transition duration-150 text-sm">
-                            <i class="fas fa-bullhorn w-4 mr-3"></i> Berita
-                        </a>
-                        <a href="#" class="flex items-center p-2 rounded-lg hover:bg-green-700 transition duration-150 text-sm">
-                            <i class="fas fa-scroll w-4 mr-3"></i> Pengumuman
-                        </a>
-                        <a href="#" class="flex items-center p-2 rounded-lg hover:bg-green-700 transition duration-150 text-sm">
-                            <i class="fas fa-file-alt w-4 mr-3"></i> Page (Halaman)
-                        </a>
+                        @if(auth()->user()->hasPermission('berita.read'))
+                            <a href="{{ route('manajemen-berita.index') }}"
+                               class="flex items-center p-2 rounded-lg hover:bg-green-700 transition duration-150 text-sm {{ request()->routeIs('manajemen-berita.*') ? 'bg-green-700' : '' }}">
+                                <i class="fas fa-bullhorn w-4 mr-3"></i> Berita
+                            </a>
+                        @endif
                     </div>
                 </div>
             @endif

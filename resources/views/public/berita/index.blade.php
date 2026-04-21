@@ -60,10 +60,9 @@
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach($berita as $item)
                         <article class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
-                            {{-- Gambar --}}
-                            @if($item->gambar_url)
-                                <img src="{{ $item->gambar_url }}" alt="{{ $item->judul }}"
-                                     class="w-full h-48 object-cover">
+                            @if($item->gambar)
+                                <img src="{{ \Illuminate\Support\Facades\Storage::url($item->gambar) }}"
+                                     alt="{{ $item->judul }}" class="w-full h-48 object-cover">
                             @else
                                 <div class="w-full h-48 bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
                                     <i class="fas fa-newspaper text-5xl text-green-400"></i>
@@ -71,7 +70,6 @@
                             @endif
 
                             <div class="p-5 flex flex-col flex-1">
-                                {{-- Badge Kategori --}}
                                 @php
                                     $colors = ['Berita'=>'bg-blue-100 text-blue-700','Pengumuman'=>'bg-red-100 text-red-700','Artikel'=>'bg-purple-100 text-purple-700'];
                                     $badgeClass = $colors[$item->kategori] ?? 'bg-gray-100 text-gray-600';
@@ -91,7 +89,7 @@
                                 <div class="mt-auto flex items-center justify-between pt-3 border-t border-gray-100">
                                     <span class="text-xs text-gray-400">
                                         <i class="fas fa-calendar mr-1"></i>
-                                        {{ $item->created_at->format('d M Y') }}
+                                        {{ $item->tanggal->format('d M Y') }}
                                     </span>
                                     <a href="{{ route('berita.show', $item->slug) }}"
                                        class="text-koperasi-primary text-sm font-semibold hover:underline">
@@ -103,7 +101,6 @@
                     @endforeach
                 </div>
 
-                {{-- Pagination --}}
                 @if($berita->hasPages())
                     <div class="mt-10 flex justify-center">
                         {{ $berita->links() }}

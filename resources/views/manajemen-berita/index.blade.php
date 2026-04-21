@@ -1,4 +1,5 @@
 @extends('layouts.users')
+@use('Illuminate\Support\Facades\Storage')
 
 @section('konten')
 <div class="flex-1 flex flex-col overflow-hidden">

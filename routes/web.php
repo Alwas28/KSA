@@ -28,15 +28,17 @@ use App\Http\Controllers\KegiatanUsahaController;
 use App\Http\Controllers\TransaksiKegiatanController;
 use App\Http\Controllers\ShuController;
 use App\Http\Controllers\RiwayatShuController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\PublicBeritaController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('home');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index']);
 
-Route::get('/home', function () {
-    return view('home');
-})->name('home');
+// Public Berita Routes (no auth required)
+Route::get('/berita', [PublicBeritaController::class, 'index'])->name('berita.index');
+Route::get('/berita/{slug}', [PublicBeritaController::class, 'show'])->name('berita.show');
 
 // Dashboard Routes
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
@@ -167,6 +169,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/transaksi-kegiatan/{id}', [TransaksiKegiatanController::class, 'detail'])->middleware('permission:simpanan.read')->name('transaksi-kegiatan.detail');
     Route::post('/transaksi-kegiatan', [TransaksiKegiatanController::class, 'store'])->middleware('permission:simpanan.create')->name('transaksi-kegiatan.store');
     Route::delete('/transaksi-kegiatan/{id}', [TransaksiKegiatanController::class, 'destroy'])->middleware('permission:simpanan.delete')->name('transaksi-kegiatan.destroy');
+
+    // Manajemen Berita Routes (Admin)
+    Route::post('/berita/upload-image', [BeritaController::class, 'uploadImage'])->name('berita.upload-image');
+    Route::get('/manajemen-berita', [BeritaController::class, 'index'])->middleware('permission:berita.read')->name('manajemen-berita.index');
+    Route::get('/manajemen-berita/create', [BeritaController::class, 'create'])->middleware('permission:berita.create')->name('manajemen-berita.create');
+    Route::post('/manajemen-berita', [BeritaController::class, 'store'])->middleware('permission:berita.create')->name('manajemen-berita.store');
+    Route::get('/manajemen-berita/{berita}', [BeritaController::class, 'show'])->middleware('permission:berita.read')->name('manajemen-berita.show');
+    Route::get('/manajemen-berita/{berita}/edit', [BeritaController::class, 'edit'])->middleware('permission:berita.edit')->name('manajemen-berita.edit');
+    Route::put('/manajemen-berita/{berita}', [BeritaController::class, 'update'])->middleware('permission:berita.edit')->name('manajemen-berita.update');
+    Route::delete('/manajemen-berita/{berita}', [BeritaController::class, 'destroy'])->middleware('permission:berita.delete')->name('manajemen-berita.destroy');
 
     // User Management Routes
     Route::resource('users', UserController::class);

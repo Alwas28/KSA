@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -15,7 +16,8 @@ return new class extends Migration
             $table->enum('kategori', ['Berita', 'Pengumuman', 'Artikel'])->default('Berita');
             $table->text('ringkasan')->nullable();
             $table->longText('konten');
-            $table->string('gambar_url', 500)->nullable();
+            $table->string('gambar')->nullable();
+            $table->date('tanggal')->default(DB::raw('CURDATE()'));
             $table->enum('status', ['draft', 'published'])->default('draft');
             $table->foreignId('id_penulis')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();

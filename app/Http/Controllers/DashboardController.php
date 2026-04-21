@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Anggota;
-use App\Models\Simpanan;
-use App\Models\Pinjaman;
-use App\Models\Angsuran;
+use App\Models\Berita;
 use App\Models\JenisSimpanan;
-use Illuminate\Http\Request;
+use App\Models\Pinjaman;
+use App\Models\Simpanan;
+use App\Models\Shu;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -17,76 +17,169 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Cek apakah user memiliki role 'Anggota'
-        $isAnggota = $user->roles()->where('name', 'Anggota')->exists();
-
-        // Jika bukan anggota, tampilkan dashboard default
-        if (!$isAnggota) {
-            return $this->dashboardDefault();
+        if ($user->hasRole('Anggota')) {
+            return $this->dashboardAnggota($user);
         }
 
-        // Cari anggota berdasarkan email user yang login
-        $anggota = Anggota::where('email', $user->email)->first();
+        if ($user->hasRole('Ketua')) {
+            return $this->dashboardKetua();
+        }
+
+        return $this->dashboardAdmin();
+    }
+
+    private function dashboardAdmin()
+    {
+        $totalAnggota   = Anggota::where('aktif', 'Y')->count();
+        $totalSimpanan  = Simpanan::sum('nominal');
+        $pinjamanMenunggu = Pinjaman::where('status', 'diajukan')->count();
+        $pinjamanBerjalan = Pinjaman::where('status_angsuran', 'aktif')->count();
+
+        $simpananPerJenis = JenisSimpanan::withSum('simpanan as total', 'nominal')
+            ->orderByDesc('total')
+            ->get();
+
+        $shuTerbaru = Shu::orderBy('tahun', 'desc')->first();
+
+        $pinjamanTerbaru = Pinjaman::with('anggota')
+            ->orderBy('tanggal_pengajuan', 'desc')
+            ->limit(5)
+            ->get();
+
+        $beritaTerbaru = [];
+        try {
+            $beritaTerbaru = Berita::where('status', 'published')
+                ->orderBy('tanggal', 'desc')
+                ->limit(3)
+                ->get(['judul', 'slug', 'kategori', 'tanggal']);
+        } catch (\Exception $e) {
+            $beritaTerbaru = collect();
+        }
+
+        return view('dashboard', compact(
+            'totalAnggota',
+            'totalSimpanan',
+            'pinjamanMenunggu',
+            'pinjamanBerjalan',
+            'simpananPerJenis',
+            'shuTerbaru',
+            'pinjamanTerbaru',
+            'beritaTerbaru'
+        ));
+    }
+
+    private function dashboardKetua()
+    {
+        $totalAnggota     = Anggota::where('aktif', 'Y')->count();
+        $totalSimpanan    = Simpanan::sum('nominal');
+        $pinjamanBerjalan = Pinjaman::where('status_angsuran', 'aktif')->count();
+        $pinjamanMenunggu = Pinjaman::where('status', 'diajukan')->count();
+
+        $simpananPerJenis = JenisSimpanan::withSum('simpanan as total', 'nominal')
+            ->orderByDesc('total')
+            ->get();
+
+        $shuTerbaru = Shu::orderBy('tahun', 'desc')->first();
+
+        $beritaTerbaru = [];
+        try {
+            $beritaTerbaru = Berita::where('status', 'published')
+                ->orderBy('tanggal', 'desc')
+                ->limit(3)
+                ->get(['judul', 'slug', 'kategori', 'tanggal']);
+        } catch (\Exception $e) {
+            $beritaTerbaru = collect();
+        }
+
+        return view('dashboard.ketua', compact(
+            'totalAnggota',
+            'totalSimpanan',
+            'pinjamanBerjalan',
+            'pinjamanMenunggu',
+            'simpananPerJenis',
+            'shuTerbaru',
+            'beritaTerbaru'
+        ));
+    }
+
+    private function dashboardAnggota($user)
+    {
+        $anggota = Anggota::with(['statusAnggota'])
+            ->where('email', $user->email)
+            ->first();
 
         if (!$anggota) {
-            return $this->dashboardDefault();
+            return view('dashboard.anggota', [
+                'anggota'          => null,
+                'totalSimpanan'    => 0,
+                'simpananPerJenis' => collect(),
+                'totalPinjaman'    => 0,
+                'totalPinjamanAktif' => 0,
+                'sisaAngsuran'     => 0,
+                'angsuranTelat'    => 0,
+                'pinjamanTerbaru'  => collect(),
+                'angsuranTerdekat' => collect(),
+                'riwayatSimpanan'  => collect(),
+                'shuAnggota'       => null,
+            ]);
         }
 
-        // Statistik Simpanan
         $totalSimpanan = Simpanan::where('id_anggota', $anggota->id_anggota)->sum('nominal');
 
         $simpananPerJenis = Simpanan::where('id_anggota', $anggota->id_anggota)
-            ->select('id_jenis_simpanan', \DB::raw('SUM(nominal) as total'))
+            ->select('id_jenis_simpanan', DB::raw('SUM(nominal) as total'))
             ->groupBy('id_jenis_simpanan')
             ->with('jenisSimpanan')
             ->get();
 
-        // Statistik Pinjaman
         $totalPinjaman = Pinjaman::where('id_anggota', $anggota->id_anggota)
             ->where('status', 'disetujui')
             ->sum('pokok_pinjaman');
 
         $totalPinjamanAktif = Pinjaman::where('id_anggota', $anggota->id_anggota)
-            ->whereIn('status_angsuran', ['aktif'])
+            ->where('status_angsuran', 'aktif')
             ->count();
 
-        // Statistik Angsuran
-        $sisaAngsuran = Angsuran::whereHas('pinjaman', function ($query) use ($anggota) {
-            $query->where('id_anggota', $anggota->id_anggota);
-        })->where('status', 'belum_bayar')->count();
+        $pinjamanIds = Pinjaman::where('id_anggota', $anggota->id_anggota)->pluck('id_pinjaman');
 
-        $angsuranTelat = Angsuran::whereHas('pinjaman', function ($query) use ($anggota) {
-            $query->where('id_anggota', $anggota->id_anggota);
-        })->where(function ($query) {
-            $query->where('status', 'telat')
-                ->orWhere(function ($q) {
-                    $q->where('status', 'belum_bayar')
-                        ->where('tanggal_jatuh_tempo', '<', Carbon::now());
-                });
-        })->count();
+        $sisaAngsuran = \App\Models\Angsuran::whereIn('id_pinjaman', $pinjamanIds)
+            ->where('status', 'belum_bayar')
+            ->count();
 
-        // Pinjaman Terbaru
+        $angsuranTelat = \App\Models\Angsuran::whereIn('id_pinjaman', $pinjamanIds)
+            ->where(function ($q) {
+                $q->where('status', 'telat')
+                  ->orWhere(function ($q2) {
+                      $q2->where('status', 'belum_bayar')
+                         ->where('tanggal_jatuh_tempo', '<', now());
+                  });
+            })->count();
+
         $pinjamanTerbaru = Pinjaman::where('id_anggota', $anggota->id_anggota)
             ->orderBy('tanggal_pengajuan', 'desc')
             ->limit(5)
             ->get();
 
-        // Angsuran Terdekat (yang belum dibayar)
-        $angsuranTerdekat = Angsuran::whereHas('pinjaman', function ($query) use ($anggota) {
-            $query->where('id_anggota', $anggota->id_anggota);
-        })
+        $angsuranTerdekat = \App\Models\Angsuran::whereIn('id_pinjaman', $pinjamanIds)
             ->where('status', 'belum_bayar')
             ->orderBy('tanggal_jatuh_tempo', 'asc')
-            ->with('pinjaman.anggota')
             ->limit(5)
             ->get();
 
-        // Riwayat Simpanan Terbaru
         $riwayatSimpanan = Simpanan::where('id_anggota', $anggota->id_anggota)
             ->with('jenisSimpanan')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
+
+        $shuAnggota = \App\Models\ShuDetail::with('shu')
+            ->where('id_anggota', $anggota->id_anggota)
+            ->orderByDesc(
+                \App\Models\Shu::select('tahun')
+                    ->whereColumn('shu.id_shu', 'shu_detail.id_shu')
+                    ->limit(1)
+            )
+            ->first();
 
         return view('dashboard.anggota', compact(
             'anggota',
@@ -98,25 +191,8 @@ class DashboardController extends Controller
             'angsuranTelat',
             'pinjamanTerbaru',
             'angsuranTerdekat',
-            'riwayatSimpanan'
-        ));
-    }
-
-    private function dashboardDefault()
-    {
-        $user = Auth::user();
-
-        // Statistik untuk Admin/Pengurus
-        $totalAnggota = Anggota::where('aktif', 'Y')->count();
-        $totalSimpanan = Simpanan::sum('nominal');
-        $totalPinjaman = Pinjaman::where('status', 'disetujui')->sum('pokok_pinjaman');
-        $pinjamanMenunggu = Pinjaman::where('status', 'diajukan')->count();
-
-        return view('dashboard', compact(
-            'totalAnggota',
-            'totalSimpanan',
-            'totalPinjaman',
-            'pinjamanMenunggu'
+            'riwayatSimpanan',
+            'shuAnggota'
         ));
     }
 }

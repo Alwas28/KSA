@@ -327,7 +327,88 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- SHU Anggota --}}
+                @if($shuAnggota)
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden mt-6">
+                    <div class="px-6 py-4 bg-purple-600 text-white flex justify-between items-center">
+                        <h4 class="text-lg font-bold">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            SHU Anda Tahun {{ $shuAnggota->shu->tahun ?? '-' }}
+                        </h4>
+                    </div>
+                    <div class="p-6 flex items-center gap-6">
+                        <div class="bg-purple-100 rounded-full p-5">
+                            <i class="fas fa-hand-holding-heart text-4xl text-purple-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Total SHU yang Anda terima</p>
+                            <p class="text-3xl font-extrabold text-purple-700 mt-1">Rp {{ number_format($shuAnggota->jumlah, 0, ',', '.') }}</p>
+                            <p class="text-xs text-gray-400 mt-1">Periode {{ $shuAnggota->shu->tahun ?? '-' }}</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
             @endif
         </main>
     </div>
+@endsection
+
+@section('js')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const toggleButton = document.getElementById('sidebar-toggle');
+        const closeButton = document.getElementById('sidebar-close');
+        const backdrop = document.getElementById('backdrop');
+
+        const toggleSidebar = () => {
+            const isOpen = sidebar.classList.contains('translate-x-0');
+            if (isOpen) {
+                sidebar.classList.remove('translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                backdrop.classList.remove('hidden');
+            }
+        };
+
+        if (toggleButton) toggleButton.addEventListener('click', toggleSidebar);
+        if (closeButton) closeButton.addEventListener('click', toggleSidebar);
+        if (backdrop) backdrop.addEventListener('click', toggleSidebar);
+
+        sidebar?.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 768) toggleSidebar();
+            });
+        });
+
+        document.querySelectorAll('[data-submenu-toggle]').forEach(toggle => {
+            toggle.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = toggle.getAttribute('data-submenu-toggle');
+                const submenu = document.getElementById(`${targetId}-submenu`);
+                const arrow = document.querySelector(`[data-arrow="${targetId}"]`);
+                if (submenu && arrow) {
+                    const isHidden = submenu.classList.contains('hidden');
+                    document.querySelectorAll('[data-submenu-toggle]').forEach(t => {
+                        const tid = t.getAttribute('data-submenu-toggle');
+                        const sm = document.getElementById(`${tid}-submenu`);
+                        const ar = document.querySelector(`[data-arrow="${tid}"]`);
+                        if (sm && ar && !sm.classList.contains('hidden')) {
+                            sm.classList.add('hidden');
+                            ar.classList.remove('rotate-180');
+                        }
+                    });
+                    if (isHidden) {
+                        submenu.classList.remove('hidden');
+                        arrow.classList.add('rotate-180');
+                    }
+                }
+            });
+        });
+    });
+</script>
 @endsection

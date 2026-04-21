@@ -12,9 +12,17 @@ class ShuController extends Controller
     public function index(Request $request)
     {
         $tahunFilter = $request->input('tahun');
+        $search      = trim($request->input('search', ''));
+        $sortCol     = $request->input('sort', 'nama');
+        $sortDir     = $request->input('dir', 'asc');
+
+        // Kolom yang diizinkan untuk sorting
+        $allowedSort = ['no_anggota', 'nama', 'tahun', 'jumlah'];
+        if (!in_array($sortCol, $allowedSort)) $sortCol = 'nama';
+        if (!in_array($sortDir, ['asc', 'desc']))  $sortDir = 'asc';
 
         $query = ShuDetail::with(['anggota', 'shu'])
-            ->join('shu', 'shu_detail.id_shu', '=', 'shu.id_shu')
+            ->join('shu',     'shu_detail.id_shu',     '=', 'shu.id_shu')
             ->join('anggota', 'shu_detail.id_anggota', '=', 'anggota.id_anggota')
             ->select('shu_detail.*');
 
@@ -22,11 +30,27 @@ class ShuController extends Controller
             $query->where('shu.tahun', $tahunFilter);
         }
 
-        $data    = $query->orderBy('shu.tahun', 'desc')->orderBy('anggota.nama')->paginate(20)->withQueryString();
-        $tahunList = Shu::orderBy('tahun', 'desc')->pluck('tahun');
-        $anggota = Anggota::where('aktif', 'Y')->orderBy('nama')->get(['id_anggota', 'no_anggota', 'nama']);
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('anggota.nama',       'like', "%{$search}%")
+                  ->orWhere('anggota.no_anggota', 'like', "%{$search}%");
+            });
+        }
 
-        return view('shu.index', compact('data', 'tahunList', 'anggota', 'tahunFilter'));
+        // Map kolom sort ke nama kolom DB
+        $sortMap = [
+            'no_anggota' => 'anggota.no_anggota',
+            'nama'       => 'anggota.nama',
+            'tahun'      => 'shu.tahun',
+            'jumlah'     => 'shu_detail.jumlah',
+        ];
+        $query->orderBy($sortMap[$sortCol], $sortDir);
+
+        $data      = $query->paginate(20)->withQueryString();
+        $tahunList = Shu::orderBy('tahun', 'desc')->pluck('tahun');
+        $anggota   = Anggota::where('aktif', 'Y')->orderBy('nama')->get(['id_anggota', 'no_anggota', 'nama']);
+
+        return view('shu.index', compact('data', 'tahunList', 'anggota', 'tahunFilter', 'search', 'sortCol', 'sortDir'));
     }
 
     public function store(Request $request)

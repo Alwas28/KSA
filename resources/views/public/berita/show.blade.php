@@ -13,13 +13,20 @@
         }
     }
 </script>
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-editor { padding: 0; font-size: 1rem; line-height: 1.75; }
+    .ql-container.ql-snow.ql-disabled { border: none; }
+    .ql-toolbar { display: none; }
+    .ql-editor img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; }
+</style>
 @endsection
 
 @section('konten')
 
     {{-- Breadcrumb --}}
     <div class="bg-white border-b border-gray-100">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm text-gray-500 flex items-center gap-2">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 text-sm text-gray-500 flex items-center gap-2 flex-wrap">
             <a href="{{ route('home') }}" class="hover:text-koperasi-primary transition">Beranda</a>
             <i class="fas fa-chevron-right text-xs"></i>
             <a href="{{ route('berita.index') }}" class="hover:text-koperasi-primary transition">Berita</a>
@@ -33,14 +40,13 @@
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <article class="bg-white rounded-2xl shadow-lg overflow-hidden">
 
-                {{-- Gambar Header --}}
-                @if($berita->gambar_url)
-                    <img src="{{ $berita->gambar_url }}" alt="{{ $berita->judul }}"
+                @if($berita->gambar)
+                    <img src="{{ \Illuminate\Support\Facades\Storage::url($berita->gambar) }}"
+                         alt="{{ $berita->judul }}"
                          class="w-full h-72 md:h-96 object-cover">
                 @endif
 
                 <div class="p-8 md:p-12">
-                    {{-- Kategori Badge --}}
                     @php
                         $colors = ['Berita'=>'bg-blue-100 text-blue-700','Pengumuman'=>'bg-red-100 text-red-700','Artikel'=>'bg-purple-100 text-purple-700'];
                         $badgeClass = $colors[$berita->kategori] ?? 'bg-gray-100 text-gray-600';
@@ -49,12 +55,10 @@
                         {{ $berita->kategori }}
                     </span>
 
-                    {{-- Judul --}}
                     <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-5 leading-tight">
                         {{ $berita->judul }}
                     </h1>
 
-                    {{-- Meta --}}
                     <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 pb-6 mb-6 border-b border-gray-100">
                         <span class="flex items-center gap-1.5">
                             <i class="fas fa-user-circle text-koperasi-primary"></i>
@@ -62,26 +66,26 @@
                         </span>
                         <span class="flex items-center gap-1.5">
                             <i class="fas fa-calendar-alt text-koperasi-primary"></i>
-                            {{ $berita->created_at->format('d F Y') }}
+                            {{ $berita->tanggal->format('d F Y') }}
                         </span>
                     </div>
 
-                    {{-- Ringkasan --}}
                     @if($berita->ringkasan)
                         <div class="bg-green-50 border-l-4 border-koperasi-primary rounded-r-xl p-5 mb-8">
                             <p class="text-gray-600 italic leading-relaxed">{{ $berita->ringkasan }}</p>
                         </div>
                     @endif
 
-                    {{-- Konten --}}
-                    <div class="text-gray-700 leading-relaxed text-base whitespace-pre-wrap">
-                        {{ $berita->konten }}
+                    {{-- Render HTML dari Quill --}}
+                    <div class="ql-container ql-snow ql-disabled">
+                        <div class="ql-editor text-gray-700">
+                            {!! $berita->konten !!}
+                        </div>
                     </div>
                 </div>
             </article>
 
-            {{-- Tombol Kembali --}}
-            <div class="mt-8 flex items-center gap-4">
+            <div class="mt-8">
                 <a href="{{ route('berita.index') }}"
                    class="inline-flex items-center gap-2 text-koperasi-primary font-semibold hover:underline">
                     <i class="fas fa-arrow-left"></i> Kembali ke Daftar Berita
@@ -98,8 +102,9 @@
                         @foreach($related as $item)
                             <a href="{{ route('berita.show', $item->slug) }}"
                                class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden flex flex-col group">
-                                @if($item->gambar_url)
-                                    <img src="{{ $item->gambar_url }}" alt="{{ $item->judul }}"
+                                @if($item->gambar)
+                                    <img src="{{ \Illuminate\Support\Facades\Storage::url($item->gambar) }}"
+                                         alt="{{ $item->judul }}"
                                          class="w-full h-36 object-cover group-hover:opacity-90 transition">
                                 @else
                                     <div class="w-full h-36 bg-green-50 flex items-center justify-center">
@@ -110,7 +115,7 @@
                                     <p class="font-semibold text-gray-800 text-sm line-clamp-2 group-hover:text-koperasi-primary transition">
                                         {{ $item->judul }}
                                     </p>
-                                    <p class="text-xs text-gray-400 mt-1">{{ $item->created_at->format('d M Y') }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">{{ $item->tanggal->format('d M Y') }}</p>
                                 </div>
                             </a>
                         @endforeach

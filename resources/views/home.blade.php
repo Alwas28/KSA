@@ -127,42 +127,67 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center mb-12">
                     <h2 class="text-4xl font-bold text-koperasi-secondary">Berita Terbaru</h2>
-                    <a href="#" class="text-koperasi-secondary hover:text-koperasi-primary font-semibold">Lihat Semua <i class="fas fa-angle-right ml-1"></i></a>
+                    <a href="{{ route('berita.index') }}"
+                       class="text-koperasi-secondary hover:text-koperasi-primary font-semibold transition">
+                        Lihat Semua <i class="fas fa-angle-right ml-1"></i>
+                    </a>
                 </div>
 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div class="p-4 bg-red-100 text-red-800 font-semibold text-sm">PENGUMUMAN PENTING</div>
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold text-gray-900 mb-2">Jadwal Rapat Anggota Tahunan (RAT) 2025</h4>
-                            <p class="text-sm text-gray-500 mb-4"><i class="fas fa-calendar-alt mr-1"></i> 10 Desember 2025</p>
-                            <p class="text-gray-600 line-clamp-3">Semua anggota diwajibkan hadir dalam RAT untuk membahas laporan pertanggungjawaban dan program kerja tahun depan.</p>
-                            <a href="#" class="text-koperasi-primary font-medium mt-3 inline-block hover:underline">Baca Detail &rarr;</a>
-                        </div>
-                    </div>
+                @if(isset($berita) && $berita->isNotEmpty())
+                    <div class="grid md:grid-cols-3 gap-8">
+                        @foreach($berita as $item)
+                            <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 flex flex-col">
+                                @if($item->gambar)
+                                    <img class="w-full h-40 object-cover"
+                                         src="{{ \Illuminate\Support\Facades\Storage::url($item->gambar) }}"
+                                         alt="{{ $item->judul }}">
+                                @else
+                                    @php
+                                        $gradients = ['Pengumuman'=>'bg-red-100','Artikel'=>'bg-purple-100','Berita'=>'bg-blue-100'];
+                                        $icons = ['Pengumuman'=>'fa-bullhorn text-red-400','Artikel'=>'fa-scroll text-purple-400','Berita'=>'fa-newspaper text-blue-400'];
+                                        $g = $gradients[$item->kategori] ?? 'bg-green-100';
+                                        $ic = $icons[$item->kategori] ?? 'fa-newspaper text-green-400';
+                                    @endphp
+                                    <div class="w-full h-40 {{ $g }} flex items-center justify-center">
+                                        <i class="fas {{ $ic }} text-4xl"></i>
+                                    </div>
+                                @endif
 
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <!-- Menggunakan placeholder gambar dengan latar belakang yang relevan -->
-                        <img class="w-full h-40 object-cover" src="https://placehold.co/400x200/059669/ffffff?text=Pelatihan+Kewirausahaan" alt="Kegiatan Koperasi">
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold text-gray-900 mb-2">Pelatihan Kewirausahaan Anggota</h4>
-                            <p class="text-sm text-gray-500 mb-4"><i class="fas fa-clock mr-1"></i> 3 Hari yang Lalu</p>
-                            <p class="text-gray-600 line-clamp-3">Koperasi sukses menyelenggarakan pelatihan untuk meningkatkan skill bisnis anggota di berbagai sektor.</p>
-                            <a href="#" class="text-koperasi-primary font-medium mt-3 inline-block hover:underline">Baca Selengkapnya &rarr;</a>
-                        </div>
+                                @php
+                                    $badgeColors = ['Pengumuman'=>'bg-red-100 text-red-800','Artikel'=>'bg-purple-100 text-purple-800','Berita'=>'bg-blue-100 text-blue-800'];
+                                    $badge = $badgeColors[$item->kategori] ?? 'bg-gray-100 text-gray-700';
+                                @endphp
+                                <div class="p-6 flex flex-col flex-1">
+                                    <span class="{{ $badge }} text-xs font-bold px-3 py-1 rounded-full inline-block w-fit mb-3">
+                                        {{ strtoupper($item->kategori) }}
+                                    </span>
+                                    <h4 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ $item->judul }}</h4>
+                                    <p class="text-sm text-gray-500 mb-3">
+                                        <i class="fas fa-calendar-alt mr-1"></i> {{ $item->tanggal->format('d M Y') }}
+                                    </p>
+                                    @if($item->ringkasan)
+                                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ $item->ringkasan }}</p>
+                                    @endif
+                                    <div class="mt-auto">
+                                        <a href="{{ route('berita.show', $item->slug) }}"
+                                           class="text-koperasi-primary font-medium hover:underline">
+                                            Baca Selengkapnya &rarr;
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-
-                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                        <!-- Menggunakan placeholder gambar dengan latar belakang yang relevan -->
-                        <img class="w-full h-40 object-cover" src="https://placehold.co/400x200/1d4ed8/ffffff?text=Laporan+Kinerja" alt="Keuangan Koperasi">
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold text-gray-900 mb-2">Laporan Kinerja Keuangan Triwulan III</h4>
-                            <p class="text-sm text-gray-500 mb-4"><i class="fas fa-chart-line mr-1"></i> 1 Minggu yang Lalu</p>
-                            <p class="text-gray-600 line-clamp-3">Laba bersih koperasi meningkat 15% berkat partisipasi aktif dan loyalitas seluruh anggota.</p>
-                            <a href="#" class="text-koperasi-primary font-medium mt-3 inline-block hover:underline">Unduh Laporan &rarr;</a>
-                        </div>
+                @else
+                    {{-- Fallback jika belum ada berita --}}
+                    <div class="text-center py-16 text-gray-400">
+                        <i class="fas fa-newspaper text-5xl mb-4 block"></i>
+                        <p class="text-lg">Belum ada berita yang dipublikasikan.</p>
+                        <a href="{{ route('berita.index') }}" class="text-koperasi-primary font-semibold mt-2 inline-block hover:underline">
+                            Lihat Semua &rarr;
+                        </a>
                     </div>
-                </div>
+                @endif
             </div>
         </section>
 
@@ -221,9 +246,12 @@
                             Senin – Jumat: 08.00 – 16.00 WITA
                         </li>
                     </ul>
-                    <div class="mt-8 h-52 bg-gray-200 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-map text-4xl text-gray-400"></i>
-                        <span class="ml-3 text-gray-500 text-lg">Peta Lokasi</span>
+                    <div class="mt-8 rounded-xl overflow-hidden shadow-md">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d6597.232363906566!2d122.50626137678185!3d-3.99870334461061!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2d98ecde057e49d9%3A0xee318b8f3b9185ca!2sUniversitas%20Muhammadiyah%20Kendari!5e1!3m2!1sid!2sid!4v1776779979104!5m2!1sid!2sid"
+                            width="100%" height="320" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade" class="w-full">
+                        </iframe>
                     </div>
                 </div>
             </div>
