@@ -43,3 +43,8 @@ user_role.read
 user_role.edit = tampilkan tombol Kelola Role
 role_permission.read
 role_permission.edit = tampilkan tombol Role Permission
+
+Perintah deploy di server baru
+- php artisan migrate
+- php artisan db:seed
+- php artisan storage:link
