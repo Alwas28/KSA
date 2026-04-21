@@ -1,0 +1,45 @@
+Contoh penggunaan:
+// Assign role ke user
+$user->assignRole('admin');
+$user->assignRole($roleObject);
+
+// Cek role
+if ($user->hasRole('admin')) { }
+if ($user->hasRole(['admin', 'manager'])) { }
+
+// Cek permission
+if ($user->hasPermission('create-user')) { }
+
+// Berikan permission ke role
+$role->givePermissionTo('edit-post');
+
+// Dapatkan semua permissions user
+$permissions = $user->getAllPermissions();
+
+
+
+
+Pada bagian menu, buatkan manajemen akses berikut untuk melihat menu dan mengakses fitur berdasarkan nama_fitur.akses
+
+laporan_keuangan.read 
+laporan_shu.read 
+arsip.read 
+arsip.create
+arsip.edit
+arsip.delete
+master_kegiatan.read
+master_kegiatan.create
+master_kegiatan.edit
+master_kegiatan.delete
+
+menu_manajemen_post.read 
+menu_master_data.read
+menu_manajemen_akses.read
+
+user.read
+role.read
+permission.read
+user_role.read 
+user_role.edit = tampilkan tombol Kelola Role
+role_permission.read
+role_permission.edit = tampilkan tombol Role Permission
